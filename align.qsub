@@ -1,0 +1,29 @@
+#!/bin/bash -l
+#PBS -N XXX
+#PBS -l walltime=1:00:00:00,nodes=1:ppn=4
+#PBS -l mem=4GB
+
+#Created by Matthew Scholz 4/12/2016
+#XXX = prefix of input file
+#YYY = read 1
+#ZZZ = read 2
+#requires the following Prereqs:
+# EDGE 
+# FaQCs
+# TRAMS
+
+#custom perl script vcf2trams.pl in root
+
+
+cd $PBS_O_WORKDIR
+
+cd data
+FaQCs.pl -p YYY ZZZ -q 3 -d ../trimmed -pre XXX -t $PBS_NUM_PPN -adapter -artifactFile ./allAdapters.txt
+
+cd $PBS_O_WORKDIR/trimmed
+runReadsToGenome.pl -ref ../ref/NC_009641.fna -pre XXX -d ../align -p 'XXX.1.trimmed.fastq XXX.2.trimmed.fastq'
+
+cd $PBS_O_WORKDIR/align
+vcf2trams.pl XXX.vcf
+TRAMS.py -s XXX.vcf.trams -r ../ref/NC_009641.gbk 
+
